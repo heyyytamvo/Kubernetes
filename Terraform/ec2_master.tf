@@ -54,7 +54,7 @@ resource "aws_security_group" "Master_Node_SG" {
   }
 }
 
-resource "aws_instance" "bastion_host" {
+resource "aws_instance" "Master_Node" {
 
   ami                         = var.ec2_ami
   instance_type               = var.ec2_instance_type

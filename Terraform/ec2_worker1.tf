@@ -1,70 +1,85 @@
-# # Security Group for EC2
-# resource "aws_security_group" "Private_EC2_SG" {
-#   name        = "Private EC2 Instance"
-#   description = "Allow all traffic from ALB and SSH From Bastion"
-#   vpc_id      = aws_vpc.main.id
+# Security Group for EC2
+resource "aws_security_group" "Worker_Node_SG" {
+  name        = "Worker_Node_SG"
+  description = "Allow HTTP inbound and all outbound traffic"
+  vpc_id      = aws_vpc.main.id
 
-#   ingress = [
-#   {
-#     from_port        = 22
-#     to_port          = 22
-#     protocol         = "tcp"
-#     cidr_blocks      = []
-#     description      = "Allow inbound traffic on port 80 from Bastion Host"
-#     ipv6_cidr_blocks = []
-#     prefix_list_ids   = []
-#     security_groups   = [aws_security_group.Bastion_SG.id]
-#     self             = false
-#   },
+  ingress = [
+    {
+      from_port        = 80
+      to_port          = 80
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      description      = "Allow inbound traffic on port 80"
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    },
 
-#   {
-#     from_port   = 0
-#     to_port     = 65535
-#     protocol    = "tcp"
-#     cidr_blocks = [],
-#     description      = "Allow inbound traffic from ALB"
-#     ipv6_cidr_blocks = []
-#     prefix_list_ids   = []
-#     security_groups   = [aws_security_group.ALB_SG.id]
-#     self             = false
-#   },
-# ]
+    {
+      from_port        = -1
+      to_port          = -1
+      protocol         = "icmp"
+      cidr_blocks      = ["0.0.0.0/0"],
+      description      = "Allow inbound ICMP Traffic"
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    },
 
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
+    {
+      from_port        = 22
+      to_port          = 22
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      description      = "Allow inbound traffic on port 22"
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    },
 
-#   tags = {
-#     Name = "Private EC2 SG"
-#   }
-# }
+    {
+      from_port        = 3306
+      to_port          = 3306
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      description      = "Allow inbound traffic to receive database"
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    }
+  ]
 
-# ## Instance
-# resource "aws_instance" "private_host_test" {
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-#     ami                    = var.ec2_ami
-#     instance_type          = var.ec2_instance_type
-#     key_name               = aws_key_pair.EC2key.key_name
-#     monitoring             = true
-#     subnet_id              = aws_subnet.private_subnet_1.id
-#     vpc_security_group_ids = [aws_security_group.Private_EC2_SG.id]
-#     # iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
-# #     user_data = <<EOF
-# # #!/bin/bash
-# # sudo apt update -y
-# # sudo apt install -y software-properties-common
-# # sudo add-apt-repository ppa:ondrej/php
-# # sudo apt update -y
-# # sudo apt install -y php7.2 php7.2-common php7.2-cli php7.2-fpm
-# # sudo apt install -y php7.2-{mysql,curl,json,xsl,gd,xml,zip,xsl,soap,bcmath,mbstring,gettext,imagick}
-# # sudo apt install -y apache2
-# # EOF
-#     tags = {
-#         Terraform   = "true"
-#         Environment = "dev"
-#         Name = "EC2 Private Test Instance"
-#     }
-# }
+  tags = {
+    Name = "Worker Node SG"
+  }
+}
+
+resource "aws_instance" "worker_node_1" {
+
+  ami                         = var.ec2_ami
+  instance_type               = var.ec2_instance_type
+  key_name                    = aws_key_pair.EC2key.key_name
+  monitoring                  = true
+  subnet_id                   = values(aws_subnet.public_subnets)[1].id
+  vpc_security_group_ids      = [aws_security_group.Worker_Node_SG.id]
+  associate_public_ip_address = true
+
+  user_data = file("${path.module}/worker_node_user_data.sh")
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+    Name        = "Worker Node 1"
+  }
+}
