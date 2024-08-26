@@ -64,6 +64,7 @@ resource "aws_instance" "bastion_host" {
   vpc_security_group_ids      = [aws_security_group.Master_Node_SG.id]
   associate_public_ip_address = true
 
+  user_data = file("${path.module}/master_node_user_data.sh")
   tags = {
     Terraform   = "true"
     Environment = "dev"
