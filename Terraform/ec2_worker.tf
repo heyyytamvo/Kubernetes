@@ -42,11 +42,11 @@ resource "aws_security_group" "Worker_Node_SG" {
     },
 
     {
-      from_port        = 3306
-      to_port          = 3306
+      from_port        = 1024
+      to_port          = 65535
       protocol         = "tcp"
       cidr_blocks      = ["0.0.0.0/0"]
-      description      = "Allow inbound traffic to receive database"
+      description      = "Allow inbound traffic"
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
       security_groups  = []
@@ -76,10 +76,28 @@ resource "aws_instance" "worker_node_1" {
   vpc_security_group_ids      = [aws_security_group.Worker_Node_SG.id]
   associate_public_ip_address = true
 
-  user_data = file("${path.module}/worker_node_user_data.sh")
+  user_data = file("${path.module}/ec2_worker_user_data.sh")
   tags = {
     Terraform   = "true"
     Environment = "dev"
     Name        = "Worker Node 1"
+  }
+}
+
+resource "aws_instance" "worker_node_2" {
+
+  ami                         = var.ec2_ami
+  instance_type               = var.ec2_instance_type
+  key_name                    = aws_key_pair.EC2key.key_name
+  monitoring                  = true
+  subnet_id                   = values(aws_subnet.public_subnets)[1].id
+  vpc_security_group_ids      = [aws_security_group.Worker_Node_SG.id]
+  associate_public_ip_address = true
+
+  user_data = file("${path.module}/ec2_worker_user_data.sh")
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+    Name        = "Worker Node 2"
   }
 }

@@ -16,4 +16,4 @@ ec2_instance_type = "t2.medium"
 
 ec2_key_name = "EC2"
 
-ec2_ami = "ami-0a0e5d9c7acc336f1" // Ubuntu
+ec2_ami = "ami-0e86e20dae9224db8" // Ubuntu 20.04
