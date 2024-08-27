@@ -80,6 +80,6 @@ resource "aws_instance" "Load_Balancer" {
   tags = {
     Terraform   = "true"
     Environment = "dev"
-    Name        = "Master Node"
+    Name        = "Load Balancer"
   }
 }
