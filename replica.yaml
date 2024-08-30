@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: replica-set-app
+  labels:
+    app: rs-app
+spec:
+  # modify replicas according to your case
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app    # must same(1) group all container with label "app: app" together
+  template:
+    metadata:
+      labels:
+        app: app  # must same(1): all launched container will be labeled as "app: app"
+    spec:
+      containers:
+      - name: my-deployment-container
+        image: vietaws/eks:v1
+

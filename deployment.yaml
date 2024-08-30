@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  labels:
+    app: app-deployment
+spec:
+  # modify replicas according to your case
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+      - name: my-container
+        image: vietaws/eks:v2
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-service
+  labels:
+    app: app
+spec:
+  type: NodePort
+  selector:
+    app: app
+  ports:
+  - port: 8081
+    targetPort: 8080
+    nodePort: 30100
